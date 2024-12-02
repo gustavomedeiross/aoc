@@ -1,0 +1,12 @@
+(library
+ (name day01)
+ (inline_tests)
+ (modules day01)
+ (preprocess
+  (pps ppx_deriving.show ppx_expect)))
+
+(executable
+ (name main)
+ (public_name aoc)
+ (modules main)
+ (libraries day01))
