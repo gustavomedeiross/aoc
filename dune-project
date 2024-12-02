@@ -19,7 +19,7 @@
  (name aoc)
  (synopsis "Advent of Code")
  (description "Advent of Code implemntation in OCaml!")
- (depends ocaml dune ppx_deriving ppx_expect)
+ (depends ocaml dune ppx_deriving ppx_expect ppx_sexp_conv sexplib)
  (tags
   (topics "aoc" your project)))
 

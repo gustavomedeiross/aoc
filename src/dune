@@ -2,8 +2,9 @@
  (name day01)
  (inline_tests)
  (modules day01)
+ (libraries sexplib)
  (preprocess
-  (pps ppx_deriving.show ppx_expect)))
+  (pps ppx_deriving.show ppx_deriving.ord ppx_expect ppx_sexp_conv)))
 
 (executable
  (name main)
