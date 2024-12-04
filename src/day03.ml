@@ -25,32 +25,35 @@ let parser : instruction list t =
     >>| List.filter_map Fun.id)
 ;;
 
-let interp instructions =
-  let sum, _ =
-    List.fold_left
-      (fun (sum, enabled) instr ->
-        match instr with
-        | Do -> sum, true
-        | Dont -> sum, false
-        | Mul (x, y) -> if enabled then sum + (x * y), enabled else sum, enabled)
-      (0, true)
-      instructions
+let interp =
+  let rec aux sum enabled = function
+    | [] -> sum
+    | hd :: tl ->
+      (match hd with
+       | Do -> aux sum true tl
+       | Dont -> aux sum false tl
+       | Mul (x, y) when enabled -> aux (sum + (x * y)) enabled tl
+       | Mul _ -> aux sum enabled tl)
   in
-  sum
+  aux 0 true
 ;;
 
 let solve input =
   match parse_string ~consume:All parser input with
-  | Ok instructions -> instructions |> interp |> Format.printf "Part 2: %d\n"
+  | Ok instructions -> instructions |> interp |> Format.printf "Result: %d\n"
   | Error msg -> failwith msg
 ;;
 
+(* Part 1 *)
+let%expect_test _ =
+  solve "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))";
+  [%expect "Result: 161"]
+;;
+
+(* Part 2 *)
 let%expect_test _ =
   solve "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))";
-  [%expect {|
-            Part 1: 161
-            Part 2: 48
-            |}]
+  [%expect "Result: 48"]
 ;;
 
 let read_file file = In_channel.with_open_bin file In_channel.input_all
