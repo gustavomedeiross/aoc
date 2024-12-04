@@ -14,8 +14,16 @@
  (preprocess
   (pps ppx_deriving.show ppx_deriving.ord ppx_expect ppx_sexp_conv)))
 
+(library
+ (name day03)
+ (inline_tests)
+ (modules day03)
+ (libraries angstrom sexplib)
+ (preprocess
+  (pps ppx_deriving.show ppx_deriving.ord ppx_expect ppx_sexp_conv)))
+
 (executable
  (name main)
  (public_name aoc)
  (modules main)
- (libraries day02))
+ (libraries day03))
