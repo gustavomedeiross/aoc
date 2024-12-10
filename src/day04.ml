@@ -54,11 +54,16 @@ let rec word_exists chmap word (x, y) dir =
     word_exists chmap word pos dir
 ;;
 
-let xmas = "XMAS" |> String.to_seq |> List.of_seq
+let string_not_empty = function
+  | "" -> false
+  | _ -> true
+;;
+
+let to_char_list s = s |> String.to_seq |> List.of_seq
 
 (* Part 1 *)
 let count_xmas chmap =
-  let xmas_exists = word_exists chmap xmas in
+  let xmas_exists = word_exists chmap (to_char_list "XMAS") in
   chmap
   |> Char_map.find 'X'
   |> Pos_set.to_list
@@ -67,9 +72,31 @@ let count_xmas chmap =
   |> List.fold_left ( + ) 0
 ;;
 
-let string_not_empty = function
-  | "" -> false
-  | _ -> true
+(* Part 2 *)
+
+(** Returns all positions that a word is found on a given direction *)
+let word_positions chmap dir word =
+  let first_letter = String.get word 0 in
+  let word_exists pos = word_exists chmap (to_char_list word) pos dir in
+  chmap |> Char_map.find first_letter |> Pos_set.filter word_exists
+;;
+
+(** Returns all positions that a word is found on a given direction,
+    including if the word is potentially reversed *)
+let word_positions_rev chmap dir word =
+  let rev_word = word |> to_char_list |> List.rev |> List.to_seq |> String.of_seq in
+  let word_positions = word_positions chmap dir in
+  Pos_set.union (word_positions word) (word_positions rev_word)
+;;
+
+let count_x_mas chmap =
+  let left_crosses = word_positions_rev chmap SE "MAS" in
+  let right_crosses = word_positions_rev chmap SW "MAS" in
+  (* We're going to shift all left crosses 2 positions to the right, to see whether it will match a right cross *)
+  left_crosses
+  |> Pos_set.map (fun (x, y) -> x + 2, y)
+  |> Pos_set.inter right_crosses
+  |> Pos_set.cardinal
 ;;
 
 let solve input =
@@ -86,7 +113,8 @@ let solve input =
          (fun chmap (pos, ch) -> Char_map.update ch (Pos_set.create_or_add pos) chmap)
          Char_map.empty
   in
-  count_xmas chmap |> Format.printf "Result: %d\n"
+  chmap |> count_xmas |> Format.printf "Part 1: %d\n";
+  chmap |> count_x_mas |> Format.printf "Part 2: %d\n"
 ;;
 
 let%expect_test _ =
@@ -103,7 +131,10 @@ let%expect_test _ =
      MAMMMXMMMM
      MXMXAXMASX
      |};
-  [%expect "Result: 18"]
+  [%expect {|
+            Part 1: 18
+            Part 2: 9
+            |}]
 ;;
 
 let read_file file = In_channel.with_open_bin file In_channel.input_all
